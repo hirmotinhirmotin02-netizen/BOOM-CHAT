@@ -12,7 +12,7 @@ const upload = multer({ dest: 'uploads/', limits: { fileSize: 20 * 1024 * 1024 }
 const G_KEY = (process.env.GEMINI_API_KEY || '').trim();
 const F_KEY = (process.env.FAL_KEY || '').trim();
 
-const G_API = ['https://', 'generativelanguage.', 'googleapis.', 'com/v1beta/models/gemini-2.5-flash:generateContent?key='].join('');
+const G_API = ['https://', 'generativelanguage.', 'googleapis.', 'com/v1beta/models/gemini-3.8-flash:generateContent?key='].join('');
 const F_IMG = ['https://', 'fal.', 'run/fal-ai/flux/schnell'].join('');
 const F_VID = ['https://', 'fal.', 'run/fal-ai/kling-video/v1.6/standard/'].join('');
 
@@ -81,6 +81,7 @@ app.post('/api/generate-video', upload.single('mediaFile'), async (req, res) => 
 
     const vr = await fetch(url, { method: 'POST', headers: { 'Authorization': 'Key ' + F_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const vd = await vr.json();
+    if (vd.video?.[0]?.url) return res.json({ videoUrl: vd.video[0].url });
     if (vd.video?.url) return res.json({ videoUrl: vd.video.url });
     res.status(500).json({ error: "वीडियो नहीं बना: " + (vd.detail || vd.message || "FAL_KEY या बैलेंस चेक करें") });
   } catch (e) { if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path); res.status(500).json({ error: "वीडियो त्रुटि: " + e.message }); }
