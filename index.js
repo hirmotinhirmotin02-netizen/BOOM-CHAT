@@ -9,8 +9,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 const upload = multer({ dest: 'uploads/', limits: { fileSize: 20 * 1024 * 1024 } });
-const G_KEY = process.env.GEMINI_API_KEY;
-const F_KEY = process.env.FAL_KEY;
+const G_KEY = (process.env.GEMINI_API_KEY || '').trim();
+const F_KEY = (process.env.FAL_KEY || '').trim();
 
 const G_API = ['https://', 'generativelanguage.', 'googleapis.', 'com/v1beta/models/gemini-2.5-flash:generateContent?key='].join('');
 const F_IMG = ['https://', 'fal.', 'run/fal-ai/flux/schnell'].join('');
@@ -23,6 +23,7 @@ function safe(t) {
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
+    if (!message) return res.json({ reply: "कृपया कुछ लिखकर पूछें!" });
     if (!safe(message)) return res.status(400).json({ error: "असुरक्षित मैसेज!" });
     const r = await fetch(G_API + G_KEY, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -32,23 +33,25 @@ app.post('/api/chat', async (req, res) => {
       })
     });
     const d = await r.json();
-    const txt = d.candidates && d.candidates && d.candidates.content && d.candidates.content.parts && d.candidates.content.parts && d.candidates.content.parts.text;
-    res.json({ reply: txt || "फिर से प्रयास करें।" });
-  } catch (e) { res.status(500).json({ error: "चैट सर्वर व्यस्त है।" }); }
+    const txt = d.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (txt) return res.json({ reply: txt });
+    res.json({ reply: "API संदेश: " + (d.error?.message || "Render में GEMINI_API_KEY चेक करें") });
+  } catch (e) { res.status(500).json({ error: "चैट सर्वर त्रुटि: " + e.message }); }
 });
 
 app.post('/api/generate-photo', async (req, res) => {
   try {
     const { prompt } = req.body;
+    if (!prompt) return res.status(400).json({ error: "कृपया लिखें कि किस चीज़ की फोटो बनानी है!" });
     if (!safe(prompt)) return res.status(400).json({ error: "गलत प्रॉम्प्ट!" });
     const r = await fetch(F_IMG, {
       method: 'POST', headers: { 'Authorization': 'Key ' + F_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt })
     });
     const d = await r.json();
-    if (d.images && d.images && d.images.url) res.json({ imageUrl: d.images.url });
-    else res.status(500).json({ error: "फोटो नहीं बन पाई, कोटा सुरक्षित है।" });
-  } catch (e) { res.status(500).json({ error: "फोटो बनाने में दिक्कत आई।" }); }
+    if (d.images?.[0]?.url) return res.json({ imageUrl: d.images[0].url });
+    res.status(500).json({ error: "फोटो नहीं बनी: " + (d.detail || d.message || "FAL_KEY या बैलेंस चेक करें") });
+  } catch (e) { res.status(500).json({ error: "फोटो सर्वर त्रुटि: " + e.message }); }
 });
 
 app.post('/api/generate-video', upload.single('mediaFile'), async (req, res) => {
@@ -72,15 +75,15 @@ app.post('/api/generate-video', upload.single('mediaFile'), async (req, res) => 
         body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: req.file.mimetype, data: vid } }, { text: "Describe camera, style and motion in English." }] }] })
       });
       const gd = await gr.json();
-      const desc = gd.candidates && gd.candidates && gd.candidates.content && gd.candidates.content.parts && gd.candidates.content.parts && gd.candidates.content.parts.text;
+      const desc = gd.candidates?.[0]?.content?.parts?.[0]?.text;
       body.prompt = (desc || "") + ". " + p;
     }
 
     const vr = await fetch(url, { method: 'POST', headers: { 'Authorization': 'Key ' + F_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const vd = await vr.json();
-    if (vd.video && vd.video.url) res.json({ videoUrl: vd.video.url });
-    else res.status(500).json({ error: "वीडियो नहीं बन पाया, कोटा सुरक्षित है।" });
-  } catch (e) { if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path); res.status(500).json({ error: "वीडियो सर्वर एरर।" }); }
+    if (vd.video?.url) return res.json({ videoUrl: vd.video.url });
+    res.status(500).json({ error: "वीडियो नहीं बना: " + (vd.detail || vd.message || "FAL_KEY या बैलेंस चेक करें") });
+  } catch (e) { if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path); res.status(500).json({ error: "वीडियो त्रुटि: " + e.message }); }
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
