@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>BOOM CHAT</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif}body{background:#0A0A0A;color:#fff;height:100vh;display:flex;flex-direction:column}#login{position:fixed;inset:0;background:#0A0A0A;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;z-index:99}input.in{width:100%;max-width:320px;padding:14px;border-radius:12px;border:none;background:#1A1D24;color:#fff;margin:12px 0}button.btn{width:100%;max-width:320px;padding:14px;border-radius:12px;border:none;background:#00A8FF;color:#fff;font-weight:bold}header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #222}.pro{background:#00A8FF;border:none;color:#fff;padding:6px 14px;border-radius:20px;font-weight:bold}#box{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}.msg{max-width:82%;padding:10px 14px;border-radius:16px;line-height:1.4}.user{align-self:flex-end;background:#00A8FF}.ai{align-self:flex-start;background:#1C1F26}.mw{position:relative;margin-top:8px}.mw img,.mw video{width:100%;border-radius:10px}.wm{position:absolute;bottom:6px;right:8px;font-size:10px;background:rgba(0,0,0,0.5);padding:2px 5px;border-radius:4px}#tag{display:none;background:#1C1F26;padding:6px 14px;font-size:12px;color:#00A8FF;justify-content:space-between}.bar{display:flex;align-items:center;background:#1A1D24;margin:8px;border-radius:28px;padding:6px 10px;gap:8px}.ic{background:none;border:none;color:#00A8FF;font-size:22px}#inp{flex:1;background:none;border:none;color:#fff;font-size:15px;outline:none}.mod{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);justify-content:center;align-items:flex-end;z-index:50}.sh{background:#16181D;width:100%;max-width:500px;border-radius:20px 20px 0 0;padding:18px}.mi{padding:12px;border-radius:10px;background:#222;margin-bottom:8px;display:flex;justify-content:space-between}</style></head><body>
+<div id="login"><h1 style="color:#00A8FF">⚡ BOOM CHAT</h1><p style="color:#aaa;margin-top:6px">हर भाषा में AI चैट, फोटो और वीडियो</p><input id="uname" class="in" placeholder="अपना नाम लिखें..."><button class="btn" onclick="log()">लॉगिन करें</button></div>
+<header><button class="ic" onclick="alert('My Creations: मीडिया नीचे से डाउनलोड करें!')">☰</button><button class="pro" onclick="om('pm')">👑 Get PRO</button><button class="ic" onclick="document.getElementById('box').innerHTML=''">📝</button></header>
+<div id="box"><div style="margin:auto;text-align:center;color:#888"><h2 style="color:#00A8FF">BOOM CHAT</h2><p>अनलिमिटेड चैट • वॉइस • 4 फ्री फोटो • AI वीडियो</p></div></div>
+<div id="tag"><span id="tt"></span><span onclick="rm()">✖</span></div>
+<div class="bar"><button class="ic" onclick="om('am')">➕</button><input type="file" id="fi" style="display:none" onchange="fsel()"><input id="inp" placeholder="कुछ भी पूछें या बनाएं..." oninput="tb()"><button class="ic" id="ab" onclick="go()">🎧</button></div>
+<div class="mod" id="am" onclick="cm(event)"><div class="sh"><h3 style="margin-bottom:10px">क्या बनाना चाहते हैं?</h3>
+<div class="mi" onclick="sm('photo',0)"><span>🎨 AI Photo Generate</span><small id="qp">4/4 फ्री</small></div>
+<div class="mi" onclick="sm('shorts',0)"><span>📱 AI Shorts Video</span><small id="qs">2/2 फ्री</small></div>
+<div class="mi" onclick="sm('long',0)"><span>🎬 AI Long Video</span><small id="ql">1/1 फ्री</small></div>
+<div class="mi" onclick="sm('photo_to_video',1,'image/*')"><span>🖼️ Photo se AI Video</span><small>फोटो चुनें</small></div>
+<div class="mi" onclick="sm('remix',1,'video/*')"><span>🔥 Video Remix</span><small>वीडियो चुनें</small></div></div></div>
+<div class="mod" id="pm" onclick="cm(event)"><div class="sh"><h2 style="color:#00A8FF;margin-bottom:10px">👑 BOOM CHAT PRO</h2>
+<div class="mi" style="flex-direction:column"><b>Shorts & Photo Pack - ₹399/महीना</b><small style="color:#ccc">30 Shorts + 100 Photos • No Watermark</small></div>
+<div class="mi" style="flex-direction:column"><b>Pro All-In-One Pack - ₹499/महीना</b><small style="color:#ccc">15 Long Video + 40 Shorts • Full HD</small></div></div></div>
+<script>
+let md='chat';
+function gq(){let d=JSON.parse(localStorage.getItem('bq')||'null');if(!d||Date.now()-d.t>864e5){d={t:Date.now(),p:4,s:2,l:1};localStorage.setItem('bq',JSON.stringify(d))}document.getElementById('qp').innerText=d.p+'/4 फ्री';document.getElementById('qs').innerText=d.s+'/2 फ्री';document.getElementById('ql').innerText=d.l+'/1 फ्री';return d}
+function log(){let n=document.getElementById('uname').value.trim();if(!n)return alert('नाम लिखें!');localStorage.setItem('bu',n);document.getElementById('login').style.display='none';gq()}
+if(localStorage.getItem('bu')){document.getElementById('login').style.display='none';gq()}
+function om(i){document.getElementById(i).style.display='flex'}
+function cm(e){if(e.target.classList.contains('mod'))e.target.style.display='none'}
+function sm(m,f,a){md=m;document.getElementById('am').style.display='none';document.getElementById('tag').style.display='flex';document.getElementById('tt').innerText='मोड: '+m.toUpperCase();if(f){let x=document.getElementById('fi');x.accept=a;x.click()}}
+function fsel(){let f=document.getElementById('fi').files;if(f&&f){document.getElementById('tt').innerText+=' 📎 '+f.name;tb()}}
+function rm(){md='chat';document.getElementById('fi').value='';document.getElementById('tag').style.display='none';tb()}
+function tb(){document.getElementById('ab').innerText=(document.getElementById('inp').value.trim()||document.getElementById('fi').files.length)?'➤':'🎧'}
+function add(s,t,u,v){let b=document.getElementById('box');if(b.firstChild&&!b.firstChild.classList)b.innerHTML='';let d=document.createElement('div');d.className='msg '+s;d.innerHTML='<div>'+t+'</div>'+(u?(v?'<div class="mw"><video src="'+u+'" controls></video><div class="wm">BOOM CHAT</div></div>':'<div class="mw"><img src="'+u+'"><div class="wm">BOOM CHAT</div></div>'):'');b.appendChild(d);b.scrollTop=b.scrollHeight}
+async function go(){
+let i=document.getElementById('inp'),t=i.value.trim(),f=document.getElementById('fi').files;
+if(!t&&!f){let S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S)return alert('वॉइस सपोर्ट नहीं है');let r=new S();r.lang='hi-IN';r.onresult=e=>{i.value=e.results.transcript;tb();go()};r.start();return}
+let q=gq();
+if(md=='photo'&&q.p<=0)return om('pm');if(md=='long'&&q.l<=0)return om('pm');if((md=='shorts'||md=='photo_to_video'||md=='remix')&&q.s<=0)return om('pm');
+add('user',t||'📎 मीडिया अपलोड');i.value='';let m=md;rm();add('ai','⏳ BOOM CHAT बना रहा है...');
+try{
+if(m=='chat'){let r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:t})});let d=await r.json();document.getElementById('box').lastChild.innerText=d.reply||d.error}
+else if(m=='photo'){let r=await fetch('/api/generate-photo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:t})});let d=await r.json();document.getElementById('box').lastChild.remove();if(d.imageUrl){q.p--;localStorage.setItem('bq',JSON.stringify(q));gq();add('ai','🎨 फोटो तैयार है!',d.imageUrl,0)}else add('ai',d.error)}
+else{let fd=new FormData();fd.append('prompt',t);fd.append('mode',m);if(f)fd.append('mediaFile',f);let r=await fetch('/api/generate-video',{method:'POST',body:fd});let d=await r.json();document.getElementById('box').lastChild.remove();if(d.videoUrl){if(m=='long')q.l--;else q.s--;localStorage.setItem('bq',JSON.stringify(q));gq();add('ai','🎬 वीडियो तैयार है!',d.videoUrl,1)}else add('ai',d.error)}
+}catch(e){document.getElementById('box').lastChild.innerText='कनेक्शन एरर!'}}
+</script></body></html>
