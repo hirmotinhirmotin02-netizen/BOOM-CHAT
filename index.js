@@ -15,27 +15,37 @@ const F_KEY = (process.env.FAL_KEY || '').trim();
 const G_BASE = ['https://', 'generativelanguage.', 'googleapis.', 'com/v1beta/'].join('');
 const F_IMG = ['https://', 'fal.', 'run/fal-ai/flux/schnell'].join('');
 const F_VID = ['https://', 'fal.', 'run/fal-ai/kling-video/v1.6/standard/'].join('');
+let fastModel = '';
 
 function safe(t) {
   return !['nsfw', 'nude', 'porn', 'blood', 'kill', 'terror', 'deepfake'].some(w => (t || '').toLowerCase().includes(w));
 }
 
 async function askGemini(payload) {
+  if (fastModel) {
+    const r = await fetch(G_BASE + fastModel + ':generateContent?key=' + G_KEY, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    const txt = d.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (txt) return { text: txt };
+    fastModel = '';
+  }
   const lr = await fetch(G_BASE + 'models?key=' + G_KEY);
   const ld = await lr.json();
   if (!ld.models) return { error: ld.error?.message || 'API Key अमान्य है' };
   const valid = ld.models
     .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
     .map(m => m.name)
-    .sort((a, b) => (b.includes('flash') ? 1 : 0) - (a.includes('flash') ? 1 : 0));
-  let lastErr = 'कोई मॉडल उपलब्ध नहीं है';
+    .sort((a, b) => (b.includes('lite') ? 2 : b.includes('flash') ? 1 : 0) - (a.includes('lite') ? 2 : a.includes('flash') ? 1 : 0));
+  let lastErr = 'सर्वर व्यस्त है';
   for (const name of valid) {
     const r = await fetch(G_BASE + name + ':generateContent?key=' + G_KEY, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
     });
     const d = await r.json();
     const txt = d.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (txt) return { text: txt };
+    if (txt) { fastModel = name; return { text: txt }; }
     lastErr = d.error?.message || lastErr;
   }
   return { error: lastErr };
@@ -47,7 +57,7 @@ app.post('/api/chat', async (req, res) => {
     if (!message) return res.json({ reply: "कृपया कुछ लिखकर पूछें!" });
     if (!safe(message)) return res.status(400).json({ error: "असुरक्षित मैसेज!" });
     const out = await askGemini({
-      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो। हर भाषा में दोस्ताना और समझदारी से जवाब दो।" }] },
+      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो। हर भाषा में छोटे, तेज़ और दोस्ताना जवाब दो।" }] },
       contents: [{ parts: [{ text: message }] }]
     });
     res.json({ reply: out.text || ("API संदेश: " + out.error) });
