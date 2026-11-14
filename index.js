@@ -15,37 +15,37 @@ const F_KEY = (process.env.FAL_KEY || '').trim();
 const G_BASE = ['https://', 'generativelanguage.', 'googleapis.', 'com/v1beta/'].join('');
 const F_IMG = ['https://', 'fal.', 'run/fal-ai/flux/schnell'].join('');
 const F_VID = ['https://', 'fal.', 'run/fal-ai/kling-video/v1.6/standard/'].join('');
-let fastModel = '';
+let smartModel = '';
 
 function safe(t) {
   return !['nsfw', 'nude', 'porn', 'blood', 'kill', 'terror', 'deepfake'].some(w => (t || '').toLowerCase().includes(w));
 }
 
 async function askGemini(payload) {
-  if (fastModel) {
-    const r = await fetch(G_BASE + fastModel + ':generateContent?key=' + G_KEY, {
+  if (smartModel) {
+    const r = await fetch(G_BASE + smartModel + ':generateContent?key=' + G_KEY, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
     });
     const d = await r.json();
-    const txt = d.candidates?.[0]?.content?.parts?.[0]?.text;
+    const txt = d.candidates?.?.content?.parts?.?.text;
     if (txt) return { text: txt };
-    fastModel = '';
+    smartModel = '';
   }
   const lr = await fetch(G_BASE + 'models?key=' + G_KEY);
   const ld = await lr.json();
   if (!ld.models) return { error: ld.error?.message || 'API Key अमान्य है' };
   const valid = ld.models
-    .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
+    .filter(m => m.supportedGenerationMethods?.includes('generateContent') && !m.name.includes('lite'))
     .map(m => m.name)
-    .sort((a, b) => (b.includes('lite') ? 2 : b.includes('flash') ? 1 : 0) - (a.includes('lite') ? 2 : a.includes('flash') ? 1 : 0));
+    .sort((a, b) => (b.includes('flash') ? 2 : b.includes('pro') ? 1 : 0) - (a.includes('flash') ? 2 : a.includes('pro') ? 1 : 0));
   let lastErr = 'सर्वर व्यस्त है';
   for (const name of valid) {
     const r = await fetch(G_BASE + name + ':generateContent?key=' + G_KEY, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
     });
     const d = await r.json();
-    const txt = d.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (txt) { fastModel = name; return { text: txt }; }
+    const txt = d.candidates?.?.content?.parts?.?.text;
+    if (txt) { smartModel = name; return { text: txt }; }
     lastErr = d.error?.message || lastErr;
   }
   return { error: lastErr };
@@ -56,10 +56,13 @@ app.post('/api/chat', async (req, res) => {
     const { message } = req.body;
     if (!message) return res.json({ reply: "कृपया कुछ लिखकर पूछें!" });
     if (!safe(message)) return res.status(400).json({ error: "असुरक्षित मैसेज!" });
+    const start = Date.now();
     const out = await askGemini({
-      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो। हर भाषा में छोटे, तेज़ और दोस्ताना जवाब दो।" }] },
+      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो, एक अत्यंत बुद्धिमान AI सहायक। तुम्हें भारत के एक युवा डेवलपर (तुम्हारे Creator) ने बनाया है। तुम कभी भी खुद को Google, Gemini या ChatGPT नहीं कहोगे। हर सवाल पर गहराई से सोचो, हमेशा सम्मान से 'आप' कहकर बात करो, और साफ-सुथरे व समझदारी भरे जवाब दो।" }] },
       contents: [{ parts: [{ text: message }] }]
     });
+    const wait = Math.max(0, 4000 - (Date.now() - start));
+    await new Promise(r => setTimeout(r, wait));
     res.json({ reply: out.text || ("API संदेश: " + out.error) });
   } catch (e) { res.status(500).json({ error: "चैट सर्वर त्रुटि: " + e.message }); }
 });
@@ -74,7 +77,7 @@ app.post('/api/generate-photo', async (req, res) => {
       body: JSON.stringify({ prompt })
     });
     const d = await r.json();
-    if (d.images?.[0]?.url) return res.json({ imageUrl: d.images[0].url });
+    if (d.images?.?.url) return res.json({ imageUrl: d.images.url });
     res.status(500).json({ error: "फोटो नहीं बनी: " + (d.detail || d.message || "FAL_KEY या बैलेंस चेक करें") });
   } catch (e) { res.status(500).json({ error: "फोटो सर्वर त्रुटि: " + e.message }); }
 });
@@ -103,7 +106,7 @@ app.post('/api/generate-video', upload.single('mediaFile'), async (req, res) => 
 
     const vr = await fetch(url, { method: 'POST', headers: { 'Authorization': 'Key ' + F_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const vd = await vr.json();
-    if (vd.video?.[0]?.url) return res.json({ videoUrl: vd.video[0].url });
+    if (vd.video?.?.url) return res.json({ videoUrl: vd.video.url });
     if (vd.video?.url) return res.json({ videoUrl: vd.video.url });
     res.status(500).json({ error: "वीडियो नहीं बना: " + (vd.detail || vd.message || "FAL_KEY या बैलेंस चेक करें") });
   } catch (e) { if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path); res.status(500).json({ error: "वीडियो त्रुटि: " + e.message }); }
