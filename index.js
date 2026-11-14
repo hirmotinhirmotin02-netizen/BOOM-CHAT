@@ -12,7 +12,7 @@ const upload = multer({ dest: 'uploads/', limits: { fileSize: 20 * 1024 * 1024 }
 const G_KEY = (process.env.GEMINI_API_KEY || '').trim();
 const F_KEY = (process.env.FAL_KEY || '').trim();
 
-const G_BASE = ['https://', 'generativelanguage.', 'googleapis.', 'com/v1beta/models/'].join('');
+const G_BASE = ['https://', 'generativelanguage.', 'googleapis.', 'com/v1beta/'].join('');
 const F_IMG = ['https://', 'fal.', 'run/fal-ai/flux/schnell'].join('');
 const F_VID = ['https://', 'fal.', 'run/fal-ai/kling-video/v1.6/standard/'].join('');
 
@@ -21,10 +21,16 @@ function safe(t) {
 }
 
 async function askGemini(payload) {
-  const models = ['gemini-3.8-flash', 'gemini-3.8-flash-lite', 'gemini-3.0-flash'];
-  let lastErr = 'सर्वर व्यस्त है';
-  for (const m of models) {
-    const r = await fetch(G_BASE + m + ':generateContent?key=' + G_KEY, {
+  const lr = await fetch(G_BASE + 'models?key=' + G_KEY);
+  const ld = await lr.json();
+  if (!ld.models) return { error: ld.error?.message || 'API Key अमान्य है' };
+  const valid = ld.models
+    .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
+    .map(m => m.name)
+    .sort((a, b) => (b.includes('flash') ? 1 : 0) - (a.includes('flash') ? 1 : 0));
+  let lastErr = 'कोई मॉडल उपलब्ध नहीं है';
+  for (const name of valid) {
+    const r = await fetch(G_BASE + name + ':generateContent?key=' + G_KEY, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
     });
     const d = await r.json();
