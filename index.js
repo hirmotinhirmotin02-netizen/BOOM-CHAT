@@ -12,7 +12,7 @@ const upload = multer({ dest: 'uploads/', limits: { fileSize: 20 * 1024 * 1024 }
 const G_KEY = (process.env.GEMINI_API_KEY || '').trim();
 const F_KEY = (process.env.FAL_KEY || '').trim();
 
-const G_API = ['https://', 'generativelanguage.', 'googleapis.', 'com/v1beta/models/gemini-3.8-flash:generateContent?key='].join('');
+const G_BASE = ['https://', 'generativelanguage.', 'googleapis.', 'com/v1beta/models/'].join('');
 const F_IMG = ['https://', 'fal.', 'run/fal-ai/flux/schnell'].join('');
 const F_VID = ['https://', 'fal.', 'run/fal-ai/kling-video/v1.6/standard/'].join('');
 
@@ -20,22 +20,31 @@ function safe(t) {
   return !['nsfw', 'nude', 'porn', 'blood', 'kill', 'terror', 'deepfake'].some(w => (t || '').toLowerCase().includes(w));
 }
 
+async function askGemini(payload) {
+  const models = ['gemini-3.8-flash', 'gemini-3.8-flash-lite', 'gemini-3.0-flash'];
+  let lastErr = 'सर्वर व्यस्त है';
+  for (const m of models) {
+    const r = await fetch(G_BASE + m + ':generateContent?key=' + G_KEY, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    const txt = d.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (txt) return { text: txt };
+    lastErr = d.error?.message || lastErr;
+  }
+  return { error: lastErr };
+}
+
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
     if (!message) return res.json({ reply: "कृपया कुछ लिखकर पूछें!" });
     if (!safe(message)) return res.status(400).json({ error: "असुरक्षित मैसेज!" });
-    const r = await fetch(G_API + G_KEY, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: "तुम BOOM CHAT हो। हर भाषा में दोस्ताना और समझदारी से जवाब दो।" }] },
-        contents: [{ parts: [{ text: message }] }]
-      })
+    const out = await askGemini({
+      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो। हर भाषा में दोस्ताना और समझदारी से जवाब दो।" }] },
+      contents: [{ parts: [{ text: message }] }]
     });
-    const d = await r.json();
-    const txt = d.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (txt) return res.json({ reply: txt });
-    res.json({ reply: "API संदेश: " + (d.error?.message || "Render में GEMINI_API_KEY चेक करें") });
+    res.json({ reply: out.text || ("API संदेश: " + out.error) });
   } catch (e) { res.status(500).json({ error: "चैट सर्वर त्रुटि: " + e.message }); }
 });
 
@@ -70,13 +79,10 @@ app.post('/api/generate-video', upload.single('mediaFile'), async (req, res) => 
     } else if (mode === 'remix' && req.file) {
       const vid = fs.readFileSync(req.file.path, 'base64');
       fs.unlinkSync(req.file.path);
-      const gr = await fetch(G_API + G_KEY, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: req.file.mimetype, data: vid } }, { text: "Describe camera, style and motion in English." }] }] })
+      const out = await askGemini({
+        contents: [{ parts: [{ inline_data: { mime_type: req.file.mimetype, data: vid } }, { text: "Describe camera, style and motion in English." }] }]
       });
-      const gd = await gr.json();
-      const desc = gd.candidates?.[0]?.content?.parts?.[0]?.text;
-      body.prompt = (desc || "") + ". " + p;
+      body.prompt = (out.text || "") + ". " + p;
     }
 
     const vr = await fetch(url, { method: 'POST', headers: { 'Authorization': 'Key ' + F_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
