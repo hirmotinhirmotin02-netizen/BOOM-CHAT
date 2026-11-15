@@ -57,7 +57,7 @@ app.post('/api/chat', async (req, res) => {
     if (!message) return res.json({ reply: "कृपया कुछ लिखकर पूछें!" });
     if (!safe(message)) return res.status(400).json({ error: "असुरक्षित मैसेज!" });
     const out = await askGemini({
-      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो, एक अत्यंत बुद्धिमान और भरोसेमंद AI सलाहकार। तुम्हें भारत के एक युवा डेवलपर (तुम्हारे Creator) ने बनाया है। तुम कभी भी खुद को Google, Gemini या ChatGPT नहीं कहोगे। हर सवाल पर गहराई से सोचो, हमेशा सम्मान से 'आप' कहकर बात करो, और 3 से 4 छोटे, सटीक व सही सलाह वाले वाक्यों में पूरा जवाब दो।" }] },
+      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो, एक अत्यंत बुद्धिमान और भरोसेमंद AI सलाहकार। तुम्हें भारत के एक युवा डेवलपर (तुम्हारे Creator) ने बनाया है। तुम कभी भी खुद को Google, Gemini या ChatGPT नहीं कहोगे। हर सवाल पर 2 सेकंड गहराई से सोचो, हमेशा सम्मान से 'आप' कहकर बात करो, और 3 से 4 छोटे, सटीक व सही सलाह वाले वाक्यों में पूरा जवाब दो।" }] },
       contents: [{ parts: [{ text: message }] }],
       generationConfig: { maxOutputTokens: 200, temperature: 0.4, thinkingConfig: { thinkingBudget: 512 } }
     });
@@ -114,6 +114,10 @@ app.post('/api/generate-video', upload.single('mediaFile'), async (req, res) => 
   } catch (e) { if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path); res.status(500).json({ error: "वीडियो त्रुटि: " + e.message }); }
 });
 
-app.get('/logo.png', (req, res) => res.sendFile(path.join(__dirname, 'logo.png')));
+app.get('/logo.png', (req, res) => {
+  const lp = path.join(__dirname, 'logo.png');
+  if (fs.existsSync(lp)) return res.sendFile(lp);
+  res.type('svg').send('<svg xmlns="http://w3.org" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1A73E8"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient></defs><rect width="100" height="100" rx="24" fill="url(#g)"/><text x="50" y="65" font-family="sans-serif" font-size="48" font-weight="bold" fill="#FFF" text-anchor="middle">B</text></svg>');
+});
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
 app.listen(process.env.PORT || 3000, () => console.log('🚀 BOOM CHAT Live!'));
