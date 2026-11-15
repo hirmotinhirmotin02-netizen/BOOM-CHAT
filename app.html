@@ -9,12 +9,12 @@
 <div id="box"></div>
 <div id="tag"><span id="tt"></span><span onclick="rm()">✖</span></div>
 <div class="card"><input type="search" id="inp" autocomplete="off" autocorrect="off" placeholder="Ask BOOM CHAT" oninput="tb()"><div class="row"><button class="ic" onclick="om('am')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><input type="file" id="fi" style="display:none" onchange="fsel()"><div style="display:flex;gap:14px;align-items:center"><button class="ic" id="mb" onclick="mic(0)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/></svg></button><button class="vbtn" id="ab" onclick="go()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><line x1="6" y1="10" x2="6" y2="14"/><line x1="10" y1="6" x2="10" y2="18"/><line x1="14" y1="8" x2="14" y2="16"/><line x1="18" y1="10" x2="18" y2="14"/></svg></button></div></div></div>
-<div class="mod" id="am" onclick="cm(event)"><div class="sh"><h3 style="margin-bottom:12px">क्या बनाना चाहते हैं?</h3>
+<div class="mod" id="am" onclick="cm(event)"><div class="sh"><h3 style="margin-bottom:12px">क्या बनाना चाहते हैं? (हर 24 घंटे रीसेट)</h3>
 <div class="mi" onclick="sm('photo',0)"><span>🎨 AI Photo Generate</span><small id="qp">4/4 फ्री</small></div>
 <div class="mi" onclick="sm('shorts',0)"><span>📱 AI Shorts Video (Ad)</span><small id="qs">2/2 फ्री</small></div>
 <div class="mi" onclick="sm('long',0)"><span>🎬 AI Long Video (Ad)</span><small id="ql">1/1 फ्री</small></div>
-<div class="mi" onclick="sm('photo_to_video',1,'image/*')"><span>🖼️ Photo se AI Video (Ad)</span><small>फोटो चुनें</small></div>
-<div class="mi" onclick="sm('remix',1,'video/*')"><span>🔥 Video Remix (Ad)</span><small>वीडियो चुनें</small></div></div></div>
+<div class="mi" onclick="sm('photo_to_video',1,'image/*')"><span>🖼️ Photo se AI Video (Ad)</span><small id="qpv">2/2 फ्री</small></div>
+<div class="mi" onclick="sm('remix',1,'video/*')"><span>🔥 Video Remix (Ad)</span><small id="qr">2/2 फ्री</small></div></div></div>
 <div class="mod" id="pm" onclick="cm(event)"><div class="sh"><h2 style="color:#1A73E8;margin-bottom:12px">✦ BOOM CHAT PRO</h2>
 <div class="mi" style="flex-direction:column"><b>Shorts & Photo Pack - ₹399/महीना</b><small style="color:#6E6E80">30 Shorts + 100 Photos • No Ads & No Watermark</small></div>
 <div class="mi" style="flex-direction:column"><b>Pro All-In-One Pack - ₹499/महीना</b><small style="color:#6E6E80">15 Long Video + 40 Shorts • Full HD</small></div></div></div>
@@ -22,29 +22,24 @@
 const AD_URL = 'YOUR_AD_LINK_HERE';
 firebase.initializeApp({apiKey:"AIzaSyAqS280jq4VIrR6GoXLKFMAGQYBxb4Ye3I",authDomain:"://firebaseapp.com",projectId:"boom-chat-622c8",storageBucket:"boom-chat-622c8.firebasestorage.app",messagingSenderId:"911709816066",appId:"1:911709816066:web:87950f67c92157aea56e1b"});
 let md='chat', vMode=0, uid='guest';
-function gq(){let k='bq_'+uid,d=JSON.parse(localStorage.getItem(k)||'null');if(!d||Date.now()-d.t>864e5){d={t:Date.now(),p:4,s:2,l:1};localStorage.setItem(k,JSON.stringify(d))}document.getElementById('qp').innerText=d.p+'/4 फ्री';document.getElementById('qs').innerText=d.s+'/2 फ्री';document.getElementById('ql').innerText=d.l+'/1 फ्री';return d}
+function gq(){let k='bq_'+uid,d=JSON.parse(localStorage.getItem(k)||'null');if(!d||Date.now()-d.t>86400000){d={t:Date.now(),p:4,s:2,l:1};localStorage.setItem(k,JSON.stringify(d))}document.getElementById('qp').innerText=d.p+'/4 फ्री';document.getElementById('qs').innerText=d.s+'/2 फ्री';document.getElementById('qpv').innerText=d.s+'/2 फ्री';document.getElementById('qr').innerText=d.s+'/2 फ्री';document.getElementById('ql').innerText=d.l+'/1 फ्री';return d}
 function sq(d){localStorage.setItem('bq_'+uid,JSON.stringify(d));gq()}
 function glog(){firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>alert('लॉगिन त्रुटि: '+e.message))}
 function logout(){if(confirm('क्या आप लॉगआउट करना चाहते हैं?'))firebase.auth().signOut()}
 firebase.auth().onAuthStateChanged(u=>{if(u){uid=u.uid;document.getElementById('login').style.display='none';gq()}else{document.getElementById('login').style.display='flex'}});
-function om(i){document.getElementById(i).style.display='flex'}
+function om(i){gq();document.getElementById(i).style.display='flex'}
 function cm(e){if(e.target.classList.contains('mod'))e.target.style.display='none'}
 function sm(m,f,a){md=m;document.getElementById('am').style.display='none';document.getElementById('tag').style.display='flex';document.getElementById('tt').innerText='मोड: '+m.toUpperCase();if(f){let x=document.getElementById('fi');x.accept=a;x.click()}}
-function fsel(){let f=document.getElementById('fi').files.item(0);if(f){document.getElementById('tt').innerText+=' 📎 '+f.name;tb()}}
   <script>
 const AD_URL = 'YOUR_AD_LINK_HERE';
-firebase.initializeApp({apiKey:"AIzaSyAqS280jq4VIrR6GoXLKFMAGQYBxb4Ye3I",authDomain:"://firebaseapp.com",projectId:"boom-chat-622c8",else if(m=='photo'){let r=await fetch('/api/generate-photo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:t})});let d=await r.json();document.getElementById('box').lastChild.remove();if(d.imageUrl){q.p--;sq(q);add('ai','🎨 फोटो तैयार है!',d.imageUrl,0,0)}else add('ai',d.error)}
-else{let fd=new FormData();fd.append('prompt',t);fd.append('mode',m);if(f)fd.append('mediaFile',f);let r=await fetch('/api/generate-video',{method:'POST',body:fd});let d=await r.json();document.getElementById('box').lastChild.remove();if(d.videoUrl){if(m=='long')q.l--;else q.s--;sq(q);add('ai','🎬 वीडियो तैयार है!',d.videoUrl,1,0)}else if(d.animatedFrame){if(m=='long')q.l--;else q.s--;sq(q);add('ai',d.note,d.animatedFrame,0,1)}else add('ai',d.error)}
-}catch(e){document.getElementById('box').lastChild.innerText='कनेक्शन एरर!'}}
-</script></body></html>
-storageBucket:"boom-chat-622c8.firebasestorage.app",messagingSenderId:"911709816066",appId:"1:911709816066:web:87950f67c92157aea56e1b"});
+firebase.initializeApp({apiKey:"AIzaSyAqS280jq4VIrR6GoXLKFMAGQYBxb4Ye3I",authDomain:"://firebaseapp.com",projectId:"boom-chat-622c8",storageBucket:"boom-chat-622c8.firebasestorage.app",messagingSenderId:"911709816066",appId:"1:911709816066:web:87950f67c92157aea56e1b"});
 let md='chat', vMode=0, uid='guest';
-function gq(){let k='bq_'+uid,d=JSON.parse(localStorage.getItem(k)||'null');if(!d||Date.now()-d.t>864e5){d={t:Date.now(),p:4,s:2,l:1};localStorage.setItem(k,JSON.stringify(d))}document.getElementById('qp').innerText=d.p+'/4 फ्री';document.getElementById('qs').innerText=d.s+'/2 फ्री';document.getElementById('ql').innerText=d.l+'/1 फ्री';return d}
+function gq(){let k='bq_'+uid,d=JSON.parse(localStorage.getItem(k)||'null');if(!d||Date.now()-d.t>86400000){d={t:Date.now(),p:4,s:2,l:1};localStorage.setItem(k,JSON.stringify(d))}document.getElementById('qp').innerText=d.p+'/4 फ्री';document.getElementById('qs').innerText=d.s+'/2 फ्री';document.getElementById('qpv').innerText=d.s+'/2 फ्री';document.getElementById('qr').innerText=d.s+'/2 फ्री';document.getElementById('ql').innerText=d.l+'/1 फ्री';return d}
 function sq(d){localStorage.setItem('bq_'+uid,JSON.stringify(d));gq()}
 function glog(){firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>alert('लॉगिन त्रुटि: '+e.message))}
 function logout(){if(confirm('क्या आप लॉगआउट करना चाहते हैं?'))firebase.auth().signOut()}
 firebase.auth().onAuthStateChanged(u=>{if(u){uid=u.uid;document.getElementById('login').style.display='none';gq()}else{document.getElementById('login').style.display='flex'}});
-function om(i){document.getElementById(i).style.display='flex'}
+function om(i){gq();document.getElementById(i).style.display='flex'}
 function cm(e){if(e.target.classList.contains('mod'))e.target.style.display='none'}
 function sm(m,f,a){md=m;document.getElementById('am').style.display='none';document.getElementById('tag').style.display='flex';document.getElementById('tt').innerText='मोड: '+m.toUpperCase();if(f){let x=document.getElementById('fi');x.accept=a;x.click()}}
 function fsel(){let f=document.getElementById('fi').files.item(0);if(f){document.getElementById('tt').innerText+=' 📎 '+f.name;tb()}}
@@ -64,6 +59,10 @@ if(m!='chat'&&m!='photo')await runAd();
 add('user',t||'📎 '+f.name);i.value='';rm();add('ai','⏳ BOOM CHAT बना रहा है...');
 try{
 if(m=='chat'){let r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:t})});let d=await r.json();let rep=d.reply||d.error;document.getElementById('box').lastChild.innerText=rep;if(spk&&d.reply)speak(d.reply)}
+else if(m=='photo'){let r=await fetch('/api/generate-photo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:t})});let d=await r.json();document.getElementById('box').lastChild.remove();if(d.imageUrl){q.p--;sq(q);add('ai','🎨 फोटो तैयार है!',d.imageUrl,0,0)}else add('ai',d.error)}
+else{let fd=new FormData();fd.append('prompt',t);fd.append('mode',m);if(f)fd.append('mediaFile',f);let r=await fetch('/api/generate-video',{method:'POST',body:fd});let d=await r.json();document.getElementById('box').lastChild.remove();if(d.videoUrl){if(m=='long')q.l--;else q.s--;sq(q);add('ai','🎬 वीडियो तैयार है!',d.videoUrl,1,0)}else if(d.animatedFrame){if(m=='long')q.l--;else q.s--;sq(q);add('ai',d.note,d.animatedFrame,0,1)}else add('ai',d.error)}
+}catch(e){document.getElementById('box').lastChild.innerText='कनेक्शन एरर!'}}
+</script></body></html>
 else if(m=='photo'){let r=await fetch('/api/generate-photo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:t})});let d=await r.json();document.getElementById('box').lastChild.remove();if(d.imageUrl){q.p--;sq(q);add('ai','🎨 फोटो तैयार है!',d.imageUrl,0,0)}else add('ai',d.error)}
 else{let fd=new FormData();fd.append('prompt',t);fd.append('mode',m);if(f)fd.append('mediaFile',f);let r=await fetch('/api/generate-video',{method:'POST',body:fd});let d=await r.json();document.getElementById('box').lastChild.remove();if(d.videoUrl){if(m=='long')q.l--;else q.s--;sq(q);add('ai','🎬 वीडियो तैयार है!',d.videoUrl,1,0)}else if(d.animatedFrame){if(m=='long')q.l--;else q.s--;sq(q);add('ai',d.note,d.animatedFrame,0,1)}else add('ai',d.error)}
 }catch(e){document.getElementById('box').lastChild.innerText='कनेक्शन एरर!'}}
