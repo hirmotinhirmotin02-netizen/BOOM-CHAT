@@ -51,15 +51,41 @@ async function askGemini(payload) {
   return { error: lastErr };
 }
 
+async function makeImageBase64(prompt, w, h) {
+  const en = await askGemini({ contents: [{ parts: [{ text: "Translate this image description into a detailed English prompt (only prompt, no extra text): " + prompt }] }] });
+  const engPrompt = (en.text || prompt).trim();
+  try {
+    const ir = await fetch(G_BASE + 'models/imagen-3.0-generate-002:predict?key=' + G_KEY, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ instances: [{ prompt: engPrompt }], parameters: { sampleCount: 1, aspectRatio: w < h ? "9:16" : (w > h ? "16:9" : "1:1") } })
+    });
+    const id = await ir.json();
+    const b64 = id.predictions?.at(0)?.bytesBase64Encoded;
+    if (b64) return 'data:image/jpeg;base64,' + b64;
+  } catch (e) {}
+  try {
+    const seed = Math.floor(Math.random() * 999999);
+    const url = P_IMG + encodeURIComponent(engPrompt + ', photorealistic, 4k') + `?width=${w}&height=${h}&nologo=true&seed=${seed}`;
+    const r = await fetch(url);
+    if (r.ok) {
+      const buf = Buffer.from(await r.arrayBuffer());
+      if (buf.length > 2000) return 'data:image/jpeg;base64,' + buf.toString('base64');
+    }
+  } catch (e) {}
+  const fb = await fetch(`https://picsum.photos{Math.floor(Math.random()*9999)}/${w}/${h}`);
+  const fbuf = Buffer.from(await fb.arrayBuffer());
+  return 'data:image/jpeg;base64,' + fbuf.toString('base64');
+}
+
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
     if (!message) return res.json({ reply: "कृपया कुछ लिखकर पूछें!" });
     if (!safe(message)) return res.status(400).json({ error: "असुरक्षित मैसेज!" });
     const out = await askGemini({
-      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो, एक अत्यंत बुद्धिमान और भरोसेमंद AI सलाहकार। तुम्हें भारत के एक युवा डेवलपर (तुम्हारे Creator) ने बनाया है। तुम कभी भी खुद को Google, Gemini या ChatGPT नहीं कहोगे। हर सवाल पर 2 सेकंड गहराई से सोचो, हमेशा सम्मान से 'आप' कहकर बात करो, और 3 से 4 छोटे, सटीक व सही सलाह वाले वाक्यों में पूरा जवाब दो।" }] },
+      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो, भारत के एक युवा डेवलपर द्वारा बनाया गया बुद्धिमान AI सहायक। यूज़र की Hinglish (जैसे 'Aachcha dost', 'kya haal hai') को स्वाभाविक रूप से समझो। हमेशा शुद्ध हिंदी (देवनागरी) या शुद्ध अंग्रेजी में लिखो—एक ही शब्द में हिंदी और अंग्रेजी अक्षर मिलाकर (जैसे 'कूलing') कभी मत लिखो। 2 से 3 छोटे, सटीक वाक्यों में जवाब दो।" }] },
       contents: [{ parts: [{ text: message }] }],
-      generationConfig: { maxOutputTokens: 200, temperature: 0.4, thinkingConfig: { thinkingBudget: 512 } }
+      generationConfig: { maxOutputTokens: 200, temperature: 0.5, thinkingConfig: { thinkingBudget: 512 } }
     });
     res.json({ reply: out.text || ("API संदेश: " + out.error) });
   } catch (e) { res.status(500).json({ error: "चैट सर्वर त्रुटि: " + e.message }); }
@@ -70,11 +96,8 @@ app.post('/api/generate-photo', async (req, res) => {
     const { prompt } = req.body;
     if (!prompt) return res.status(400).json({ error: "कृपया लिखें कि किस चीज़ की फोटो बनानी है!" });
     if (!safe(prompt)) return res.status(400).json({ error: "गलत प्रॉम्प्ट!" });
-    const seed = Math.floor(Math.random() * 999999);
-    const url = P_IMG + encodeURIComponent(prompt + ', photorealistic, 4k hd') + '?width=768&height=768&nologo=true&seed=' + seed;
-    const r = await fetch(url);
-    const buf = Buffer.from(await r.arrayBuffer());
-    res.json({ imageUrl: 'data:image/jpeg;base64,' + buf.toString('base64') });
+    const img = await makeImageBase64(prompt, 768, 768);
+    res.json({ imageUrl: img });
   } catch (e) { res.status(500).json({ error: "फोटो बनाने में दिक्कत आई: " + e.message }); }
 });
 
@@ -84,7 +107,8 @@ app.post('/api/generate-video', upload.single('mediaFile'), async (req, res) => 
     if (!safe(prompt)) { if (req.file) fs.unlinkSync(req.file.path); return res.status(400).json({ error: "गलत कंटेंट!" }); }
     let p = prompt || "Cinematic HD video";
     let url = F_VID + 'text-to-video';
-    let body = { prompt: p, duration: mode === 'long' ? "10" : "5", aspect_ratio: mode === 'long' ? "16:9" : "9:16" };
+    let isLong = mode === 'long';
+    let body = { prompt: p, duration: isLong ? "10" : "5", aspect_ratio: isLong ? "16:9" : "9:16" };
     let uploadedImg = '';
 
     if (mode === 'photo_to_video' && req.file) {
@@ -106,18 +130,11 @@ app.post('/api/generate-video', upload.single('mediaFile'), async (req, res) => 
       const vd = await vr.json();
       if (vd.video?.url) return res.json({ videoUrl: vd.video.url });
     }
-    const seed = Math.floor(Math.random() * 999999);
-    const frameUrl = uploadedImg || (P_IMG + encodeURIComponent(p + ', cinematic movie scene, 4k') + '?width=720&height=1280&nologo=true&seed=' + seed);
-    const fr = await fetch(frameUrl);
-    const fbuf = Buffer.from(await fr.arrayBuffer());
-    res.json({ animatedFrame: 'data:image/jpeg;base64,' + fbuf.toString('base64'), note: '🎬 AI Motion Video तैयार है!' });
+    const frame = uploadedImg || await makeImageBase64(p, isLong ? 1280 : 720, isLong ? 720 : 1280);
+    res.json({ animatedFrame: frame, note: isLong ? '🎬 AI Long Video तैयार है!' : '📱 AI Shorts Video तैयार है!' });
   } catch (e) { if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path); res.status(500).json({ error: "वीडियो त्रुटि: " + e.message }); }
 });
 
-app.get('/logo.png', (req, res) => {
-  const lp = path.join(__dirname, 'logo.png');
-  if (fs.existsSync(lp)) return res.sendFile(lp);
-  res.type('svg').send('<svg xmlns="http://w3.org" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1A73E8"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient></defs><rect width="100" height="100" rx="24" fill="url(#g)"/><text x="50" y="65" font-family="sans-serif" font-size="48" font-weight="bold" fill="#FFF" text-anchor="middle">B</text></svg>');
-});
+app.get('/logo.png', (req, res) => res.sendFile(path.join(__dirname, 'logo.png')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
 app.listen(process.env.PORT || 3000, () => console.log('🚀 BOOM CHAT Live!'));
