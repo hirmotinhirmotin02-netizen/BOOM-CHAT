@@ -56,14 +56,11 @@ app.post('/api/chat', async (req, res) => {
     const { message } = req.body;
     if (!message) return res.json({ reply: "कृपया कुछ लिखकर पूछें!" });
     if (!safe(message)) return res.status(400).json({ error: "असुरक्षित मैसेज!" });
-    const start = Date.now();
     const out = await askGemini({
-      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो, एक बुद्धिमान AI सहायक। तुम्हें भारत के एक युवा डेवलपर (तुम्हारे Creator) ने बनाया है। तुम कभी भी खुद को Google, Gemini या ChatGPT नहीं कहोगे। हमेशा सम्मान से 'आप' कहकर और 3 से 4 छोटे, सटीक व समझदारी भरे वाक्यों में जवाब दो।" }] },
+      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो, एक अत्यंत बुद्धिमान और भरोसेमंद AI सलाहकार। तुम्हें भारत के एक युवा डेवलपर (तुम्हारे Creator) ने बनाया है। तुम कभी भी खुद को Google, Gemini या ChatGPT नहीं कहोगे। हर सवाल पर गहराई से सोचो, हमेशा सम्मान से 'आप' कहकर बात करो, और 3 से 4 छोटे, सटीक व काम की सही सलाह दो।" }] },
       contents: [{ parts: [{ text: message }] }],
-      generationConfig: { maxOutputTokens: 250, temperature: 0.7 }
+      generationConfig: { maxOutputTokens: 220, temperature: 0.4, thinkingConfig: { thinkingBudget: 512 } }
     });
-    const wait = Math.max(0, 2500 - (Date.now() - start));
-    await new Promise(r => setTimeout(r, wait));
     res.json({ reply: out.text || ("API संदेश: " + out.error) });
   } catch (e) { res.status(500).json({ error: "चैट सर्वर त्रुटि: " + e.message }); }
 });
