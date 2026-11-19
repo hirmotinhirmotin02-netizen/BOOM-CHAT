@@ -51,9 +51,7 @@ async function askGemini(payload) {
   return { error: lastErr };
 }
 
-async function makeImageBase64(prompt, w, h) {
-  const en = await askGemini({ contents: [{ parts: [{ text: "Translate this image description into a detailed English prompt (only prompt, no extra text): " + prompt }] }] });
-  const engPrompt = (en.text || prompt).trim();
+async function makeImageBase64(engPrompt, w, h) {
   try {
     const ir = await fetch(G_BASE + 'models/imagen-3.0-generate-002:predict?key=' + G_KEY, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -65,7 +63,7 @@ async function makeImageBase64(prompt, w, h) {
   } catch (e) {}
   try {
     const seed = Math.floor(Math.random() * 999999);
-    const url = P_IMG + encodeURIComponent(engPrompt + ', photorealistic, 4k') + `?width=${w}&height=${h}&nologo=true&seed=${seed}`;
+    const url = P_IMG + encodeURIComponent(engPrompt + ', 3d animation style, vibrant, 4k') + `?width=${w}&height=${h}&nologo=true&seed=${seed}`;
     const r = await fetch(url);
     if (r.ok) {
       const buf = Buffer.from(await r.arrayBuffer());
@@ -83,9 +81,9 @@ app.post('/api/chat', async (req, res) => {
     if (!message) return res.json({ reply: "कृपया कुछ लिखकर पूछें!" });
     if (!safe(message)) return res.status(400).json({ error: "असुरक्षित मैसेज!" });
     const out = await askGemini({
-      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो, भारत के एक युवा डेवलपर द्वारा बनाया गया बुद्धिमान AI सहायक। यूज़र की Hinglish (जैसे 'Aachcha dost', 'kya haal hai') को स्वाभाविक रूप से समझो। हमेशा शुद्ध हिंदी (देवनागरी) या शुद्ध अंग्रेजी में लिखो—एक ही शब्द में हिंदी और अंग्रेजी अक्षर मिलाकर (जैसे 'कूलing') कभी मत लिखो। 2 से 3 छोटे, सटीक वाक्यों में जवाब दो।" }] },
+      system_instruction: { parts: [{ text: "तुम BOOM CHAT हो—ChatGPT की तरह अत्यंत बुद्धिमान, तार्किक और सहायक AI। हर सवाल को गहराई से समझो और 2 सेकंड में सटीक, आसान व पॉइंट-वाइज़ जवाब दो। यदि यूज़र फोटो या वीडियो बनाने को कहे, तो कहो: 'जी ज़रूर! नीचे बाईं तरफ + बटन दबाकर Photo या Video चुनें और अपना विषय लिखें, मैं तुरंत बना दूँगा।' हमेशा केवल शुद्ध हिंदी (देवनागरी लिपि) या शुद्ध अंग्रेजी में लिखो—एक ही शब्द में दोनों लिपियाँ कभी मत मिलाओ।" }] },
       contents: [{ parts: [{ text: message }] }],
-      generationConfig: { maxOutputTokens: 200, temperature: 0.5, thinkingConfig: { thinkingBudget: 512 } }
+      generationConfig: { maxOutputTokens: 250, temperature: 0.4, thinkingConfig: { thinkingBudget: 512 } }
     });
     res.json({ reply: out.text || ("API संदेश: " + out.error) });
   } catch (e) { res.status(500).json({ error: "चैट सर्वर त्रुटि: " + e.message }); }
@@ -96,7 +94,8 @@ app.post('/api/generate-photo', async (req, res) => {
     const { prompt } = req.body;
     if (!prompt) return res.status(400).json({ error: "कृपया लिखें कि किस चीज़ की फोटो बनानी है!" });
     if (!safe(prompt)) return res.status(400).json({ error: "गलत प्रॉम्प्ट!" });
-    const img = await makeImageBase64(prompt, 768, 768);
+    const en = await askGemini({ contents: [{ parts: [{ text: "Convert this into a detailed 3D/realistic English image prompt (only prompt): " + prompt }] }] });
+    const img = await makeImageBase64((en.text || prompt).trim(), 768, 768);
     res.json({ imageUrl: img });
   } catch (e) { res.status(500).json({ error: "फोटो बनाने में दिक्कत आई: " + e.message }); }
 });
@@ -105,36 +104,48 @@ app.post('/api/generate-video', upload.single('mediaFile'), async (req, res) => 
   try {
     const { prompt, mode } = req.body;
     if (!safe(prompt)) { if (req.file) fs.unlinkSync(req.file.path); return res.status(400).json({ error: "गलत कंटेंट!" }); }
-    let p = prompt || "Cinematic HD video";
-    let url = F_VID + 'text-to-video';
+    let p = prompt || "Cute animated story";
     let isLong = mode === 'long';
-    let body = { prompt: p, duration: isLong ? "10" : "5", aspect_ratio: isLong ? "16:9" : "9:16" };
+    let w = isLong ? 1280 : 720, h = isLong ? 720 : 1280;
     let uploadedImg = '';
 
     if (mode === 'photo_to_video' && req.file) {
       uploadedImg = 'data:' + req.file.mimetype + ';base64,' + fs.readFileSync(req.file.path, 'base64');
       fs.unlinkSync(req.file.path);
-      url = F_VID + 'image-to-video';
-      body = { prompt: p, image_url: uploadedImg, duration: "5" };
-    } else if (mode === 'remix' && req.file) {
-      const vid = fs.readFileSync(req.file.path, 'base64');
+    } else if (req.file) {
       fs.unlinkSync(req.file.path);
-      const out = await askGemini({
-        contents: [{ parts: [{ inline_data: { mime_type: req.file.mimetype, data: vid } }, { text: "Describe camera, style and motion in English." }] }]
-      });
-      body.prompt = (out.text || "") + ". " + p;
     }
 
     if (F_KEY) {
+      let url = uploadedImg ? F_VID + 'image-to-video' : F_VID + 'text-to-video';
+      let body = uploadedImg ? { prompt: p, image_url: uploadedImg, duration: "5" } : { prompt: p, duration: isLong ? "10" : "5", aspect_ratio: isLong ? "16:9" : "9:16" };
       const vr = await fetch(url, { method: 'POST', headers: { 'Authorization': 'Key ' + F_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const vd = await vr.json();
       if (vd.video?.url) return res.json({ videoUrl: vd.video.url });
     }
-    const frame = uploadedImg || await makeImageBase64(p, isLong ? 1280 : 720, isLong ? 720 : 1280);
-    res.json({ animatedFrame: frame, note: isLong ? '🎬 AI Long Video तैयार है!' : '📱 AI Shorts Video तैयार है!' });
+
+    const sb = await askGemini({
+      contents: [{ parts: [{ text: `Create a 4-scene animated story video script for: "${p}". Return ONLY a valid JSON array of 4 objects like [{"en":"3D Pixar style cute red apple and green chili talking happily","hi":"एक दिन रसोई में लाल सेब और हरी मिर्ची की दोस्ती हुई।"}]. Keep "hi" in pure Hindi Devanagari (1 short sentence per scene).` }] }]
+    });
+    let scenes = [];
+    try {
+      const raw = (sb.text || '').replace(/```json|```/g, '').trim();
+      scenes = JSON.parse(raw);
+    } catch (e) {
+      scenes = [
+        { en: "3D Pixar style cute animated characters " + p + ", scene 1, bright colors", hi: p + " की मज़ेदार कहानी शुरू होती है।" },
+        { en: "3D Pixar style cute animated characters " + p + ", funny moment, scene 2", hi: "कहानी में एक नया और मज़ेदार मोड़ आता है।" },
+        { en: "3D Pixar style cute animated characters " + p + ", happy ending, scene 3", hi: "आखिर में सब कुछ बहुत अच्छा हो जाता है।" }
+      ];
+    }
+    const frames = [];
+    for (const sc of scenes.slice(0, 4)) {
+      const img = uploadedImg || await makeImageBase64(sc.en, w, h);
+      frames.push({ img, text: sc.hi });
+    }
+    res.json({ storyVideo: frames, note: isLong ? '🎬 AI Story Long Video तैयार है!' : '📱 AI Story Shorts तैयार है!' });
   } catch (e) { if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path); res.status(500).json({ error: "वीडियो त्रुटि: " + e.message }); }
 });
 
-app.get('/logo.png', (req, res) => res.sendFile(path.join(__dirname, 'logo.png')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'app.html')));
 app.listen(process.env.PORT || 3000, () => console.log('🚀 BOOM CHAT Live!'));
