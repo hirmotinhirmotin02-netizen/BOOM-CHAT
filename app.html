@@ -14,8 +14,23 @@
 17px;font-weight:850}.note{text-align:center;color:#8290ab;font-size:11px;margin:10px 0}.heading{margin:6px 0 20px}.heading h2{font-size:27px;margin:0 0 5px}.heading p{margin:0;color:var(--muted)}.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}.tile b{display:block;margin:0 0 5px}.tile p{color:var(--muted);font-size:13px;margin:0}.plan{position:relative;background:linear-gradient(145deg,#1b2948,#11182b);border:1px solid #43557b;border-radius:19px;padding:22px}.plan.max{border-color:#9278ed;box-shadow:0 10px 38px #9278ed20}.plan h3{margin:0 0 10px}.price{font-size:35px;font-weight:900}.plan ul{padding-left:20px;min-height:115px;color:#d9e3f7;line-height:1.9}.plan button{width:100%}.tag{position:absolute;right:14px;top:14px;background:#594b9e;border-radius:20px;padding:4px
 9px;font-size:10px}.formcard{max-width:560px;background:var(--panel);border:1px solid var(--line);padding:20px;border-radius:17px}.formcard label{display:block;margin:12px 0 5px;color:#cbd6eb;font-size:13px}.formcard input,.formcard textarea,.formcard select{width:100%;padding:11px;border-radius:10px;background:#0a1325;border:1px solid var(--line);color:white}.status{font-size:12px;color:var(--muted);margin-top:10px}.wallpaper{min-height:125px;border-radius:13px;background:linear-gradient(145deg,#1d3265,#805bb0 55%,#e2a7a0);display:flex;align-items:end;padding:12px;font-weight:700}.wallpaper.morning{background:linear-gradient(145deg,#f4c58e,#e58b9b,#526da5)}.wallpaper.night{background:linear-gradient(145deg,#080e2d,#273c78,#765ba7)}.hidden{display:none!important}
 @media(max-width:760px){.layout{grid-template-columns:1fr}.sidebar{display:none}.top{padding:0 13px}.body{padding:20px 13px 40px}.hero{padding-top:35px}.hero h1{font-size:29px}.grid3{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.bubble{max-width:94%}}
-@media(max-width:390px){.quick,.grid3{grid-template-columns:1fr}.topright .chip:first-child{display:none}}
+  @media(max-width:390px){.quick,.grid3{grid-template-columns:1fr}.topright .chip:first-child{display:none}}
+  @keyframes logoSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.logo {
+  animation: logoSpin 8s linear infinite;
+  transform-origin: center;
+}
 </style>
+</style>
+  
 </head>
 <body>
 <div class="layout">
