@@ -1,163 +1,362 @@
-<!doctype html>
-<html lang="hi">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#090d1c">
-<title>BOOM CHAT — App</title>
-<style>
-:root{--bg:#080d1b;--panel:#111a2e;--panel2:#17233c;--line:#2a3a59;--txt:#f4f7ff;--muted:#9eabc5;--a:#7c91ff;--b:#4fd0df;--violet:#aa8cff}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -15%,#293b70 0,transparent 38%),var(--bg);color:var(--txt);font:15px/1.5 system-ui,Arial,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer;color:inherit}.layout{min-height:100vh;display:grid;grid-template-columns:258px 1fr}.sidebar{background:#0a1121;border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:14px}.brand{display:flex;align-items:center;gap:10px;font-weight:850;font-size:19px;padding:4px
-7px;letter-spacing:.4px}
-  .logo{height:39px;width:39px;border-radius:13px;background:linear-gradient(135deg,var(--a),var(--b));display:grid;place-items:center;color:#071020;font-weight:950;font-size:22px}.new{background:linear-gradient(110deg,#344d91,#236b7b);border:0;border-radius:12px;padding:12px;text-align:left;font-weight:750}.navlabel{font-size:10px;color:#8392b0;letter-spacing:1.4px;padding:5px 8px 0}.nav{border:0;background:transparent;text-align:left;padding:10px;border-radius:10px;color:#d9e3f8}.nav:hover,.nav.active{background:#1a2945}.sidefoot{margin-top:auto;display:grid;gap:8px}.sidefoot small{color:#7e8da9;padding:0 7px}.main{min-width:0;display:flex;flex-direction:column}.top{height:65px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--line);background:#0b1223dd;position:sticky;top:0;z-index:3}.topright{display:flex;gap:8px}.chip,.secondary{border:1px solid var(--line);background:var(--panel);border-radius:30px;padding:8px 13px;font-size:12px}.body{width:min(1040px,100%);padding:28px 22px 50px;margin:0 auto;flex:1}.view{display:none}.view.active{display:block}.hero{text-align:center;padding:55px 10px 28px}.heroicon{height:70px;width:70px;margin:auto auto 16px;border-radius:23px;background:linear-gradient(135deg,var(--a),var(--b));display:grid;place-items:center;color:#071020;font-size:30px;font-weight:900;box-shadow:0 12px 45px #647fff44}.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px}.muted{color:var(--muted)}.hero
-   p{max-width:620px;margin:auto}.quick,.grid2,.grid3{display:grid;gap:12px}.quick{grid-template-columns:repeat(2,1fr);max-width:620px;margin:24px auto}.quick button,.tile,.card{background:linear-gradient(145deg,#16223a,#10182a);border:1px solid var(--line);border-radius:15px;padding:15px;text-align:left}.quick button:hover,.tile:hover{border-color:#647de0}.chatlog{display:flex;flex-direction:column;gap:12px;margin:0 0 18px}.bubble{max-width:85%;padding:12px 15px;border-radius:16px;white-space:pre-wrap}.bubble.user{align-self:flex-end;background:#2b417a}.bubble.ai{align-self:flex-start;background:var(--panel);border:1px solid var(--line)}.composer{position:sticky;bottom:10px;background:#111a2e;border:1px solid #3a4d72;border-radius:18px;padding:10px;box-shadow:0 12px 35px #0006}.composer textarea{width:100%;min-height:48px;max-height:150px;resize:vertical;background:transparent;color:var(--txt);border:0;outline:0;padding:8px}.row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.rowleft{display:flex;gap:7px;flex-wrap:wrap}.smallbtn{background:#1b2945;border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:12px}.primary{background:linear-gradient(120deg,var(--a),var(--b));color:#071020;border:0;border-radius:11px;padding:10px                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-17px;font-weight:850}.note{text-align:center;color:#8290ab;font-size:11px;margin:10px 0}.heading{margin:6px 0 20px}.heading h2{font-size:27px;margin:0 0 5px}.heading p{margin:0;color:var(--muted)}.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}.tile b{display:block;margin:0 0 5px}.tile p{color:var(--muted);font-size:13px;margin:0}.plan{position:relative;background:linear-gradient(145deg,#1b2948,#11182b);border:1px solid #43557b;border-radius:19px;padding:22px}.plan.max{border-color:#9278ed;box-shadow:0 10px 38px #9278ed20}.plan h3{margin:0 0 10px}.price{font-size:35px;font-weight:900}.plan ul{padding-left:20px;min-height:115px;color:#d9e3f7;line-height:1.9}.plan button{width:100%}.tag{position:absolute;right:14px;top:14px;background:#594b9e;border-radius:20px;padding:4px
-9px;font-size:10px}.formcard{max-width:560px;background:var(--panel);border:1px solid var(--line);padding:20px;border-radius:17px}.formcard label{display:block;margin:12px 0 5px;color:#cbd6eb;font-size:13px}.formcard input,.formcard textarea,.formcard select{width:100%;padding:11px;border-radius:10px;background:#0a1325;border:1px solid var(--line);color:white}.status{font-size:12px;color:var(--muted);margin-top:10px}.wallpaper{min-height:125px;border-radius:13px;background:linear-gradient(145deg,#1d3265,#805bb0 55%,#e2a7a0);display:flex;align-items:end;padding:12px;font-weight:700}.wallpaper.morning{background:linear-gradient(145deg,#f4c58e,#e58b9b,#526da5)}.wallpaper.night{background:linear-gradient(145deg,#080e2d,#273c78,#765ba7)}.hidden{display:none!important}
-@media(max-width:760px){.layout{grid-template-columns:1fr}.sidebar{display:none}.top{padding:0 13px}.body{padding:20px 13px 40px}.hero{padding-top:35px}.hero h1{font-size:29px}.grid3{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.bubble{max-width:94%}}
-  @media(max-width:390px){.quick,.grid3{grid-template-columns:1fr}.topright .chip:first-child{display:none}}
-  @keyframes logoSpin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
 
-.logo {
-  animation: logoSpin 8s linear infinite;
-  transform-origin: center;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b16">
+<title>BOOM CHAT</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+ background:#080b16;color:#fff;
+ font-family:Arial,sans-serif;
+ min-height:100vh;
+}
+header{
+ background:#10182a;padding:17px;
+ display:flex;align-items:center;
+ justify-content:space-between;
+ border-bottom:1px solid #26334c;
+ position:sticky;top:0;z-index:5;
+}
+.logo{font-size:23px;font-weight:bold;color:#55caff}
+.menu{background:#1d2b43;color:white;border:0;padding:10px;border-radius:9px}
+nav{
+ display:flex;gap:9px;padding:12px;
+ overflow-x:auto;background:#0d1424;
+}
+nav button{
+ flex-shrink:0;background:#19263c;color:#fff;
+ border:1px solid #30415d;padding:10px 14px;
+ border-radius:20px;
+}
+button{cursor:pointer}
+main{max-width:850px;margin:auto;padding:16px}
+section{display:none;margin:15px 0}
+section.active{display:block}
+h2{margin-bottom:15px;color:#62caff}
+h3{margin-bottom:8px}
+p{color:#b8c5d9;line-height:1.6}
+.hero{
+ text-align:center;padding:30px 12px;
+ background:linear-gradient(140deg,#152b50,#111326,#29194a);
+ border:1px solid #35496e;border-radius:20px;
+}
+#logoCircle{
+ width:90px;height:90px;border:4px solid #58caff;
+ border-radius:50%;margin:0 auto 20px;
+ display:grid;place-items:center;
+ font-size:34px;font-weight:bold;
+ animation:rotate 7s linear infinite;
+}
+@keyframes rotate{to{transform:rotate(360deg)}}
+.hero h1{font-size:30px;color:#64ceff}
+.hero p{margin-top:10px}
+.card{
+ background:#111c30;border:1px solid #293c59;
+ border-radius:16px;padding:17px;margin:12px 0;
+}
+.grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:12px;
+}
+.primary{
+ background:#168bff;color:white;border:0;
+ padding:12px 17px;border-radius:10px;font-weight:bold;
+}
+.secondary{
+ background:#23334d;color:white;border:0;
+ padding:11px 15px;border-radius:10px;
+}
+input,textarea,select{
+ width:100%;padding:13px;margin:8px 0;
+ border:1px solid #344663;border-radius:10px;
+ background:#101b2e;color:white;
+}
+textarea{min-height:90px;resize:vertical}
+.price{font-size:30px;color:#58caff;font-weight:bold}
+ul{padding-left:20px;color:#d4deed;line-height:2}
+.wallpaper{
+ padding:15px;background:#1b2b45;
+ border:1px solid #405575;border-radius:12px;
+ margin:7px 0;
+}
+#messages{
+ height:300px;overflow:auto;
+ background:#0c1424;padding:12px;border-radius:12px;
+}
+.msg{padding:10px;margin:8px 0;background:#1b2c47;border-radius:10px}
+.small{font-size:12px;color:#8fa6c4}
+footer{text-align:center;padding:25px;color:#8194ae}
+.badge{color:#62d6ff;font-size:12px}
+@media(max-width:500px){
+ .grid{grid-template-columns:1fr}
+ .hero h1{font-size:25px}
 }
 </style>
-</style>
-  
 </head>
 <body>
-<div class="layout">
-<aside class="sidebar" id="sidebar">
- <div class="brand"><div class="logo">B</div> BOOM CHAT</div>
- <button class="new" onclick="newChat()">＋ &nbsp; New Chat</button>
- <div class="navlabel">MAIN</div>
- <button class="nav active" data-view="chat" onclick="go('chat')">✦ &nbsp; AI Chat</button>
- <button class="nav" data-view="create" onclick="go('create')">✧ &nbsp; Create Studio</button>
- <button class="nav" data-view="wallpapers" onclick="go('wallpapers')">▧ &nbsp; Wallpapers</button>
- <button class="nav" data-view="tools" onclick="go('tools')">⌘ &nbsp; AI Tools</button>
- <div class="navlabel">ACCOUNT</div>
- <button class="nav" data-view="history" onclick="go('history')">◷ &nbsp; Chat History</button>
- <button class="nav" data-view="plans" onclick="go('plans')">♢ &nbsp; Pro Plans</button>
- <button class="nav" data-view="profile" onclick="go('profile')">◉ &nbsp; Profile / Login</button>
- <button class="nav" data-view="report" onclick="go('report')">⚑ &nbsp; Report a Problem</button>
- <div class="sidefoot"><button class="new" onclick="go('plans')">✧ &nbsp; Upgrade Plan</button><small>Your AI space · BOOM CHAT</small></div>
-</aside>
-<main class="main">
- <header class="top"><div class="row"><button class="secondary" style="display:none" id="menuBtn" onclick="toggleSide()">☰</button><b id="pageTitle">Your AI space</b></div><div class="topright"><button class="chip" onclick="go('plans')">✧ Pro Plans</button><button class="chip" onclick="go('profile')">Profile</button></div></header>
- <div class="body">
-  <section class="view active" id="v-chat">
-   <div class="hero" id="welcome"><div class="heroicon">B</div><h1>Namaste, dost!</h1><p class="muted">Welcome to BOOM CHAT — tumhara AI space. Poochho, seekho, socho aur create karo.</p>
-    <div class="quick">
-     <button onclick="ask('Mujhe ek app ka idea do')">✦ &nbsp; App idea</button>
-     <button onclick="ask('Mujhe simple Hindi mein samjhao')">▤ &nbsp; Study help</button>
-     <button onclick="go('create')">▧ &nbsp; Create something</button>
-     <button onclick="ask('Mujhe coding mein help karo')">⌘ &nbsp; Coding help</button>
-    </div>
-   </div>
-   <div class="chatlog" id="chatlog"></div>
-   <div class="composer"><textarea id="prompt" placeholder="BOOM CHAT se kuch bhi poochho..." onkeydown="enterSend(event)"></textarea>
-    <div class="row"><div class="rowleft">
-     <button class="smallbtn" onclick="document.getElementById('imageFile').click()">＋ Photo</button><input id="imageFile" type="file" accept="image/*" class="hidden" onchange="pickedFile(this,'photo')">
-<button class="smallbtn" onclick="document.getElementById('videoFile').click()">＋ Video</button><input id="videoFile" type="file" accept="video/*" class="hidden" onchange="pickedFile(this,'video')">
-     <button class="smallbtn" onclick="voice()">🎙 Voice</button>
-    </div><button class="primary" onclick="send()">Send ➤</button></div>
-   </div>
-   <p class="note">Demo interface: real AI responses ke liye secure backend aur AI API connect karna zaroori hai.</p>
-  </section>
-  <section class="view" id="v-create">
-   <div class="heading"><h2>Create Studio</h2><p>Image aur video banane ke tools ka interface.</p></div>
-   <div class="grid2">
-    <div class="card"><b>▧ Text to Image</b><p class="muted">Apne prompt se image banane ka tool.</p><label class="status">Image prompt</label><textarea id="imagePrompt" placeholder="Describe the image..." style="width:100%;min-height:85px;background:#0a1325;color:white;border:1px solid var(--line);border-radius:10px;padding:10px"></textarea><button class="primary" style="margin-top:10px" onclick="demoAction('Text to Image')">Generate Image</button></div>
-    <div class="card"><b>▶ Text to Video</b><p class="muted">Text prompt se video generation.</p><label class="status">Video prompt</label><textarea id="videoPrompt" placeholder="Describe your video..." style="width:100%;min-height:85px;background:#0a1325;color:white;border:1px solid var(--line);border-radius:10px;padding:10px"></textarea><button class="primary" style="margin-top:10px" onclick="demoAction('Text to Video')">Create Video</button></div>
-   <p class="note">Generation aur analysis ko chalane ke liye compatible APIs/backend ki zaroorat hogi.</p>
-  </section>
-  <section class="view" id="v-wallpapers">
-   <div class="heading"><h2>Wallpaper Gallery</h2><p>Premium wallpaper collections.</p></div>
-   <div class="grid2">
-    <div class="card"><div class="wallpaper morning">Morning Sky Collection</div><p class="muted">Pro Max · 10 wallpapers</p></div>
-    <div class="card"><div class="wallpaper night">Night Sky / Galaxy</div><p class="muted">Pro Max · 10 wallpapers</p></div>
-    <div class="card"><div class="wallpaper" style="background:linear-gradient(140deg,#14234a,#536eaa,#b4c7df)">Premium Sky</div><p class="muted">Pro · 10 wallpapers</p></div>
-   </div><button class="primary" style="margin-top:18px" onclick="go('plans')">See Pro Plans</button>
-  </section>
-  <section class="view" id="v-tools">
-   <div class="heading"><h2>AI Tools</h2><p>BOOM CHAT ke planned tools.</p></div>
-   <div class="grid3">
-    <div class="tile"><b>✦ AI Chat</b><p>Text conversation, multilingual help.</p></div>
-    <div class="tile"><b>🎙 Voice Assistant</b><p>Speech input and spoken AI response.</p></div>
-    <div class="tile"><b>▧ Image AI</b><p>Image generation and photo understanding.</p></div>
-    <div class="tile"><b>▶ Video AI</b><p>Text-to-video and image-to-video.</p></div>
-    <div class="tile"><b>⌘ App Builder Help</b><p>App planning and code assistance.</p></div>
-    <div class="tile"><b>🎮 Game Code Help</b><p>Game ideas and programming guidance.</p></div>
-    <div class="tile"><b>▤ Study Helper</b><p>School subjects and explanations.</p></div>
-    <div class="tile"><b>文 Translation</b><p>Multiple languages and translation.</p></div>
-    <div class="tile"><b>✍ Writing Assistant</b><p>Messages, stories and writing help.</p></div>
-   </div>
-  </section>
-  <section class="view" id="v-history">
-   <div class="heading"><h2>Chat History</h2><p>Is browser session mein hui chats.</p></div><div id="historyItems" class="card muted">Abhi koi saved chat nahi hai.</div>
-  </section>
-
-  <section class="view" id="v-plans">
-   <div class="heading"><h2>Choose your plan</h2><p>Free access pehle se available rahega. Yahan sirf do paid options hain.</p></div>
-   <div class="grid2">
-    <article class="plan"><h3>PRO</h3><div class="price">₹199</div><div class="muted">15 days</div><ul><li>10 premium wallpapers</li><li>Premium wallpaper collection</li><li>15 din ka access</li></ul><button class="primary" onclick="choosePlan('PRO','₹199')">Choose Pro</button></article>
-    <article class="plan max"><span class="tag">PREMIUM</span><h3>PRO MAX</h3><div class="price">₹699</div><div class="muted">Pro Max plan</div><ul><li>20 premium wallpapers</li><li>10 Morning Sky wallpapers</li><li>10 Night Sky / Galaxy wallpapers</li></ul><button class="primary" onclick="choosePlan('PRO MAX','₹699')">Choose Pro Max</button></article>
-   </div><p class="note">Payment gateway abhi connect nahi hai. Plan buttons abhi demo hain.</p>
-     </div><p class="note">Payment gateway abhi connect nahi hai. Plan buttons abhi demo hain.</p>
-  </section>
-
-  <section class="view" id="v-profile">
-   <div class="heading"><h2>Profile & Login</h2><p>Account screen ka demo. Secure login backend baad mein connect hoga.</p></div>
-   <div class="formcard"><h3>Create account / Sign in</h3><label>Display name</label><input id="userName" placeholder="Your name"><label>Email</label><input id="userEmail" type="email" placeholder="name@example.com"><label>Password</label><input id="userPass" type="password" placeholder="Password"><button class="primary" style="margin-top:15px" onclick="profileDemo()">Continue</button><p id="profileMsg" class="status"></p></div>
-   <p class="note">Reports ko admin tak pahunchane ke liye database aur moderation/admin backend chahiye.</p>
-  </section>
+<header>
+ <div class="logo">BOOM CHAT</div>
+ <button class="menu" onclick="showPage('profile')">My Account</button>
+</header>
+<nav>
+ <button onclick="showPage('home')">Home</button>
+ <button onclick="showPage('chat')">AI Chat</button>
+ <button onclick="showPage('voice')">Voice</button>
+ <button onclick="showPage('images')">AI Photos</button>
+ <button onclick="showPage('videos')">Videos</button>
+ <button onclick="showPage('wallpapers')">Wallpapers</button>
+ <button onclick="showPage('plans')">Plans</button>
+ <button onclick="showPage('history')">History</button>
+ <button onclick="showPage('help')">Help</button>
+</nav>
+<main>
+<!-- HOME -->
+<section id="home" class="active">
+ <div class="hero">
+  <div id="logoCircle">B</div>
+  <h1>BOOM CHAT</h1>
+  <p>Your AI Space</p>
+  <p>Namaste Dost! ❤️</p>
+  <br>
+  <button class="primary" onclick="showPage('chat')">Start Chatting</button>
  </div>
+ <div class="grid">
+  <div class="card" onclick="showPage('chat')">
+   <h3>AI Chat</h3><p>Talk with your AI assistant.</p>
+  </div>
+  <div class="card" onclick="showPage('images')">
+   <h3>AI Photos</h3><p>Create images with AI.</p>
+  </div>
+  <div class="card" onclick="showPage('videos')">
+   <h3>AI Videos</h3><p>Shorts and long videos.</p>
+  </div>
+  <div class="card" onclick="showPage('wallpapers')">
+   <h3>Wallpapers</h3><p>Explore premium collections.</p>
+  </div>
+ </div>
+</section>
+<!-- CHAT -->
+<section id="chat">
+ <h2>BOOM AI Chat</h2>
+ <div id="messages">
+  <div class="msg">BOOM CHAT: Namaste dost! ❤️</div>
+ </div>
+ <input id="chatInput" placeholder="Message BOOM CHAT...">
+ <button class="primary" onclick="sendMessage()">Send</button>
+ <p class="small">Demo interface: Gemini API backend connection is required.</p>
+</section>
+<!-- VOICE -->
+<section id="voice">
+ <h2>Voice Assistant</h2>
+ <div class="card">
+  <p>Talk with BOOM CHAT using your voice.</p>
+  <button class="primary" onclick="startVoice()">🎤 Start Voice</button>
+  <p id="voiceStatus">Voice is not started.</p>
+ </div>
+</section>
+<!-- IMAGES -->
+<section id="images">
+ <h2>AI Image Generator</h2>
+ <div class="card">
+  <textarea id="imagePrompt" placeholder="Describe the image you want..."></textarea>
+  <button class="primary" onclick="demoFeature('Image generation')">Generate Image</button>
+  <p class="small">Requires an image-generation API on the backend.</p>
+  <input type="file" accept="image/*">
+ </div>
+</section>
+<!-- VIDEOS -->
+<section id="videos">
+ <h2>AI Video Studio</h2>
+ <div class="card">
+  <h3>AI Shorts</h3>
+  <p>Create short videos using AI.</p>
+  <button class="primary" onclick="demoFeature('Short video generation')">Create Short</button>
+ </div>
+ <div class="card">
+  <h3>AI Long Videos</h3>
+  <p>Create long videos using AI.</p>
+  <button class="primary" onclick="demoFeature('Long video generation')">Create Long Video</button>
+ </div>
+ <div class="card">
+  <h3>Photo to Video</h3>
+  <input type="file" accept="image/*">
+  <button class="primary" onclick="demoFeature('Photo to video')">Create Video</button>
+ </div>
+ <div class="card">
+  <h3>Upload Video</h3>
+  <input type="file" id="videoFile" accept="video/*">
+  <button class="primary" onclick="demoFeature('Video upload')">Upload</button>
+ </div>
+</section>
+<!-- WALLPAPERS -->
+<section id="wallpapers">
+ <h2>Wallpaper Collection</h2>
+ <div class="card">
+  <h3>Galaxy Collection</h3>
+  <p>20 Premium Wallpapers</p>
+  <div class="wallpaper">Night Galaxy 01–20</div>
+ </div>
+ <div class="card">
+  <h3>Sunset Collection</h3>
+  <p>5 Wallpapers</p>
+  <div class="wallpaper">Beautiful Sunset 01–05</div>
+ </div>
+ <div class="card">
+  <h3>Morning Sky Collection</h3>
+  <p>5 Wallpapers</p>
+  <div class="wallpaper">Morning Sky 01–05</div>
+ </div>
+ <div class="card">
+  <h3>BMW M4 Collection</h3>
+  <p>25 Wallpapers – 5 per color</p>
+  <div class="wallpaper">Brooklyn Grey – 5</div>
+  <div class="wallpaper">Isle of Man Green – 5</div>
+  <div class="wallpaper">Marina Bay Blue – 5</div>
+  <div class="wallpaper">Alpine White – 5</div>
+  <div class="wallpaper">Toronto Red – 5</div>
+ </div>
+ <p class="small">Total: 55 planned wallpapers. Actual wallpaper images still need to be added.</p>
+</section>
+<!-- PLANS -->
+<section id="plans">
+ <h2>Choose Your Plan</h2>
+ <div class="card">
+  <h3>FREE</h3>
+  <div class="price">₹0</div>
+  <ul>
+   <li>1 Short per 24 hours</li>
+   <li>Free access</li>
+  </ul>
+  <button class="secondary">Current Free Plan</button>
+ </div>
+ <div class="card">
+  <h3>PRO</h3>
+  <div class="price">₹299</div>
+  <p>20 Days</p>
+  <ul>
+   <li>5 Shorts</li>
+   <li>5 Long Videos</li>
+   <li>10 AI Photos</li>
+   <li>25 Messages</li>
+  </ul>
+  <button class="primary" onclick="demoFeature('Pro subscription')">Choose Pro</button>
+ </div>
+ <div class="card">
+  <h3>PRO MAX ⭐</h3>
+  <div class="price">₹799</div>
+  <p>30 Days</p>
+  <ul>
+   <li>30 Shorts total</li>
+   <li>Maximum 2 Shorts per day</li>
+   <li>25 Long Videos total</li>
+   <li>Maximum 1 Long Video per day</li>
+   <li>30 AI Photos</li>
+   <li>100 Messages</li>
+   <li>55 Premium Wallpapers</li>
+  </ul>
+  <button class="primary" onclick="demoFeature('Pro Max subscription')">Choose Pro Max</button>
+ </div>
+ <p class="small">Subscription buttons are placeholders until secure payment integration is added.</p>
+</section>
+<!-- HISTORY -->
+<section id="history">
+ <h2>Chat History</h2>
+ <div class="card" id="historyList">Your chat history will appear here.</div>
+</section>
+<!-- PROFILE -->
+<section id="profile">
+ <h2>My Account</h2>
+ <div class="card">
+  <input id="userName" placeholder="Your name">
+  <input id="userEmail" type="email" placeholder="Your email">
+  <button class="primary" onclick="demoFeature('Login / Signup')">Login / Sign Up</button>
+  <p class="small">Real account authentication requires a secure backend.</p>
+ </div>
+</section>
+<!-- LANGUAGE -->
+<section id="language">
+ <h2>Select Language</h2>
+ <select id="languageSelect">
+  <option value="hi">Hindi</option>
+  <option value="en">English</option>
+ </select>
+</section>
+<!-- HELP -->
+<section id="help">
+ <h2>Help Center</h2>
+ <div class="card">
+  <p>How can we help you?</p>
+  <textarea id="feedbackText" placeholder="Write your problem or feedback"></textarea>
+  <button class="primary" onclick="demoFeature('Support request')">Contact Support</button>
+ </div>
+</section>
+<!-- SECURITY -->
+<section id="security">
+ <h2>Privacy & Security</h2>
+ <div class="card">
+  <p>Your account matters.</p>
+  <p>Secure login and data protection need backend implementation.</p>
+ </div>
+</section>
+<!-- ABOUT -->
+<section id="about">
+ <h2>About BOOM CHAT</h2>
+ <div class="card">
+  <p>Your AI Space</p>
+  <p>Chat, Create and Explore.</p>
+ </div>
+</section>
 </main>
-</div>
+<footer>© 2026 BOOM CHAT · Your AI Space</footer>
 <script>
-const titles={chat:'Your AI space',create:'Create Studio',wallpapers:'Wallpaper Gallery',tools:'AI Tools',history:'Chat History',plans:'Pro Plans',profile:'Profile / Login',report:'Report a Problem'};
-let history=[];
-function go(name){
- document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
- document.getElementById('v-'+name).classList.add('active');
- document.getElementById('pageTitle').textContent=titles[name]||'BOOM CHAT';
-  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.view===name));
- if(innerWidth<=760)document.getElementById('sidebar').style.display='none';
+function showPage(id){
+ document.querySelectorAll('main section').forEach(s=>{
+  s.classList.remove('active');
+ });
+ const page=document.getElementById(id);
+ if(page) page.classList.add('active');
+ window.scrollTo(0,0);
 }
-function toggleSide(){let s=document.getElementById('sidebar');s.style.display=s.style.display==='flex'?'none':'flex';s.style.position='absolute';s.style.zIndex='5';s.style.width='258px';s.style.height='100vh'}
-function newChat(){document.getElementById('chatlog').innerHTML='';document.getElementById('welcome').classList.remove('hidden');document.getElementById('prompt').value='';go('chat')}
-function addBubble(text,who){let d=document.createElement('div');d.className='bubble '+who;d.textContent=text;document.getElementById('chatlog').appendChild(d)}
-function send(){
- let input=document.getElementById('prompt'),text=input.value.trim();if(!text)return;
-document.getElementById('welcome').classList.add('hidden');addBubble(text,'user');input.value='';
- // Safe demo response: connect your own server-side AI endpoint here.
- addBubble('BOOM CHAT ka interface ready hai. Real AI answer ke liye secure backend/API connect karna baaki hai.','ai');
- history.unshift(text);renderHistory();
+function sendMessage(){
+ const input=document.getElementById('chatInput');
+ const messages=document.getElementById('messages');
+ const value=input.value.trim();
+ if(!value)return;
+ const msg=document.createElement('div');
+ msg.className='msg';
+ msg.textContent='You: '+value;
+ messages.appendChild(msg);
+ const reply=document.createElement('div');
+ reply.className='msg';
+ reply.textContent='BOOM CHAT: AI connection is not configured yet.';
+ messages.appendChild(reply);
+ input.value='';
+ messages.scrollTop=messages.scrollHeight;
 }
-function ask(t){document.getElementById('prompt').value=t;send()}
-function enterSend(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}
-function renderHistory(){
- let h=document.getElementById('historyItems');h.innerHTML='';
- if(!history.length){h.textContent='Abhi koi saved chat nahi hai.';return}
- history.forEach(t=>{let p=document.createElement('p');p.textContent='• '+t;h.appendChild(p)})
-function pickedFile(input,type){if(input.files&&input.files[0]){document.getElementById('prompt').value=(type==='photo'?'Photo':'Video')+' selected: '+input.files[0].name+'. Is file ko samajhne ke liye AI media API connect karni hogi.';go('chat')}}
-function voice(){
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR){alert('Is browser mein voice input supported nahi hai.');return}
- const r=new SR();r.lang='hi-IN';r.onresult=e=>document.getElementById('prompt').value=e.results[0][0].transcript;r.start();
+function startVoice(){
+ const status=document.getElementById('voiceStatus');
+ const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SpeechRecognition){
+  status.textContent='Voice recognition is not supported in this browser.';
+  return;
+ }
+ const recognition=new SpeechRecognition();
+ recognition.lang='hi-IN';
+ recognition.onresult=e=>{
+  status.textContent='You said: '+e.results[0][0].transcript;
+ };
+ recognition.onerror=()=>{
+  status.textContent='Voice recognition could not start.';
+ };
+ recognition.start();
+ status.textContent='Listening...';
 }
-function demoAction(feature){alert(feature+' ka screen ready hai. Is feature ko chalane ke liye secure backend aur compatible API connect karni hogi.')}
-function choosePlan(plan,price){alert(plan+' '+price+' select hua. Payment gateway connect hone ke baad secure payment li ja sakegi.')}
-function profileDemo(){let n=document.getElementById('userName').value.trim(),e=document.getElementById('userEmail').value.trim();document.getElementById('profileMsg').textContent=n&&e?'Demo profile details entered. Real account banane ke liye secure authentication backend zaroori hai.':'Name aur email bharo.'}
-function reportDemo(){let t=document.getElementById('reportText').value.trim();document.getElementById('reportMsg').textContent=t?'Report form ready hai. Admin tak bhejne ke liye backend/database connect karna hoga.':'Pehle report details likho.'}
-if(innerWidth<=760)document.getElementById('menuBtn').style.display='inline-block';
+function demoFeature(name){
+ alert(name+' needs backend/API integration. This screen is currently a frontend demo.');
+}
 </script>
 </body>
 </html>
